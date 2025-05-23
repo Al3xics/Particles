@@ -29,7 +29,7 @@ int main()
             if (it->isDead()) {
                 it = particles.erase(it);
             } else {
-                utils::draw_disk(it->position, 0.01f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+                utils::draw_disk(it->position, it->radius(), it->color());
                 ++it;
             }
         }
