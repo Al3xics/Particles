@@ -14,22 +14,19 @@ int main()
 
     // Créer un tableau de particules
     std::vector<Particle> particles(100);
-    for (auto& particle : particles)
-    {
-        particle.position = glm::vec2(
-            -gl::window_aspect_ratio() + static_cast<float>(std::rand()) / RAND_MAX * 2 * gl::window_aspect_ratio(),
-            -1.0f + static_cast<float>(std::rand()) / RAND_MAX * 2.0f
-        );
-    }
 
     while (gl::window_is_open())
     {
         glClearColor(0.f, 0.f, 0.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        const float dt = gl::delta_time_in_seconds();
+        const glm::vec2 mouse = gl::mouse_position();
+
         // Afficher les particules
-        for (const auto& particle : particles)
+        for (auto& particle : particles)
         {
+            particle.update(dt, mouse);
             utils::draw_disk(particle.position, 0.01f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         }
     }
