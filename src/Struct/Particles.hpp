@@ -61,7 +61,8 @@ struct Particle {
     // Radius that linearly shrinks to 0 at end of life
     float radius() const {
         float fade = std::clamp((2.0f - (lifetime - age)) / 2.0f, 0.f, 1.f); // 0 si plus de 2 sec restantes, 1 si mort imminente
-        return startRadius * (1.0f - fade);
+        float bounce = std::abs(std::sin(10.f * fade * glm::pi<float>()) * (1.f - fade));
+        return startRadius * (1.0f - fade) + 0.005f * bounce;
     }
 
     glm::vec4 color() const {
