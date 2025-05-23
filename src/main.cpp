@@ -21,13 +21,17 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         const float dt = gl::delta_time_in_seconds();
-        const glm::vec2 mouse = gl::mouse_position();
 
         // Afficher les particules
-        for (auto& particle : particles)
+        for (auto it = particles.begin(); it != particles.end(); )
         {
-            particle.update(dt, mouse);
-            utils::draw_disk(particle.position, 0.01f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            it->update(dt);
+            if (it->isDead()) {
+                it = particles.erase(it);
+            } else {
+                utils::draw_disk(it->position, 0.01f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+                ++it;
+            }
         }
     }
 }
