@@ -66,8 +66,12 @@ struct Particle {
     }
 
     glm::vec4 color() const {
-        float t = std::clamp(age / lifetime, 0.f, 1.f); // progression de vie [0,1]
-        return (1.f - t) * startColor + t * endColor; // interpolation linéaire
+        float p = 3.f;
+        float t = glm::clamp(age / lifetime, 0.f, 1.f);
+        float left = std::pow(glm::min(2.f * t, 1.f), p);
+        float right = std::pow(glm::min(2.f * (1.f - t), 1.f), p);
+        float easedT = 0.5f * (left + (2.f - right));
+        return (1.f - easedT) * startColor + easedT * endColor;
     }
 
     // Function to display the particle's position
