@@ -86,11 +86,37 @@ int main()
             it->update(dt);
 
             glm::vec2 intersection;
+            bool collided = false;
+            glm::vec2 normal;
+
+            glm::vec2 nextPos = it->position + it->velocity * dt;
+
             for (const auto& line : lines) {
-                bool found = intersect_segments(it->position, it->position + it->velocity * dt, line.p1, line.p2, intersection);
-                if (found) {
-                    it->velocity = glm::reflect(it->velocity, glm::normalize(intersection - it->position));
+                if (intersect_segments(it->position, nextPos, line.p1, line.p2, intersection)) {
+                    collided = true;
+                    
+                    // Calcul du vecteur directeur de la ligne
+                    glm::vec2 edge = line.p2 - line.p1;
+                    normal = glm::normalize(glm::vec2(-edge.y, edge.x)); // normale perpendiculaire
+
+                    // Si la normale ne pointe pas vers la particule, on l'inverse
+                    if (glm::dot(normal, it->velocity) > 0.f)
+                        normal = -normal;
+
+                    break; // On considère la première collision trouvée
                 }
+            }
+
+            if (collided) {
+                // Vélocité réfléchie
+                glm::vec2 reflectedVelocity = glm::reflect(it->velocity, normal);
+
+                // Distance parcourue après la collision
+                float distAfterIntersection = glm::length(nextPos - intersection);
+
+                // Repositionnement : on recule sur la nouvelle direction
+                it->position = intersection + reflectedVelocity * (distAfterIntersection / glm::length(reflectedVelocity));
+                it->velocity = reflectedVelocity;
             }
 
             if (it->isDead()) {
