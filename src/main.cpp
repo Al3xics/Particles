@@ -26,6 +26,42 @@ bool intersect_segments(glm::vec2 p1, glm::vec2 p2, glm::vec2 q1, glm::vec2 q2, 
     return false;
 }
 
+bool intersect_segment_circle(glm::vec2 p0, glm::vec2 p1, glm::vec2 center, float radius, glm::vec2& intersection)
+{
+    glm::vec2 d = p1 - p0;
+    glm::vec2 f = p0 - center;
+
+    float a = glm::dot(d, d);
+    float b = 2.f * glm::dot(f, d);
+    float c = glm::dot(f, f) - radius * radius;
+
+    float discriminant = b * b - 4 * a * c;
+
+    if (discriminant < 0) {
+        // Pas d'intersection
+        return false;
+    } else {
+        discriminant = std::sqrt(discriminant);
+
+        // Trouver les deux solutions possibles
+        float t1 = (-b - discriminant) / (2 * a);
+        float t2 = (-b + discriminant) / (2 * a);
+
+        // Vérifier si une solution est dans le segment
+        if (t1 >= 0.f && t1 <= 1.f) {
+            intersection = p0 + t1 * d;
+            return true;
+        }
+
+        if (t2 >= 0.f && t2 <= 1.f) {
+            intersection = p0 + t2 * d;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 int main()
 {
@@ -73,6 +109,39 @@ int main()
     lines.push_back({bottomRight, bottomLeft});
     lines.push_back({bottomLeft, topLeft});
 
+    // Création de cercles aléatoires
+    struct Circle {
+        glm::vec2 center;
+        float radius;
+    };
+
+    int circleCount = 3;
+    float minRadius = 0.1f;
+    float maxRadius = 0.2f;
+
+    std::vector<Circle> circles;
+
+    for (int i = 0; i < circleCount; ++i) {
+        glm::vec2 center = glm::vec2(
+            utils::rand(-gl::window_aspect_ratio() + 0.2f, gl::window_aspect_ratio() - 0.2f),
+            utils::rand(-0.9f, 0.9f)
+        );
+        float radius = utils::rand(minRadius, maxRadius);
+        circles.push_back({center, radius});
+    }
+
+    particles.erase(
+        std::remove_if(particles.begin(), particles.end(), [&](const Particle& p) {
+            for (const auto& circle : circles) {
+                if (glm::distance(p.position, circle.center) < circle.radius) {
+                    return true; // Supprimer cette particule
+                }
+            }
+            return false;
+        }),
+        particles.end()
+    );
+
     while (gl::window_is_open())
     {
         glClearColor(0.f, 0.f, 0.f, 1.f);
@@ -103,18 +172,26 @@ int main()
                     if (glm::dot(normal, it->velocity) > 0.f)
                         normal = -normal;
 
-                    break; // On considère la première collision trouvée
+                    break; // première collision ligne trouvée
                 }
             }
 
-            if (collided) {
-                // Vélocité réfléchie
-                glm::vec2 reflectedVelocity = glm::reflect(it->velocity, normal);
+            // --- Test collision cercle (uniquement si pas déjà collision ligne) ---
+            if (!collided) {
+                for (const auto& circle : circles) {
+                    if (intersect_segment_circle(it->position, nextPos, circle.center, circle.radius, intersection)) {
+                        collided = true;
+                        normal = glm::normalize(intersection - circle.center);
+                        break;
+                    }
+                }
+            }
 
-                // Distance parcourue après la collision
+            // --- Si collision ---
+            if (collided) {
+                glm::vec2 reflectedVelocity = glm::reflect(it->velocity, normal);
                 float distAfterIntersection = glm::length(nextPos - intersection);
 
-                // Repositionnement : on recule sur la nouvelle direction
                 it->position = intersection + reflectedVelocity * (distAfterIntersection / glm::length(reflectedVelocity));
                 it->velocity = reflectedVelocity;
             }
@@ -127,9 +204,14 @@ int main()
             }
         }
 
-        // Afficher les lignes
+        // Dessiner les lignes
         for (const auto& line : lines) {
             utils::draw_line(line.p1, line.p2, 0.005f, glm::vec4(1, 0, 0, 1));
+        }
+
+        // Dessiner les cercles
+        for (const auto& circle : circles) {
+            utils::draw_disk(circle.center, circle.radius, glm::vec4(1, 0, 0, 0.5f));
         }
     }
 }
