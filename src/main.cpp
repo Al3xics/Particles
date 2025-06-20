@@ -37,6 +37,42 @@ int main()
     // Créer un tableau de particules
     std::vector<Particle> particles(200);
 
+
+    // Création de lignes aléatoires
+    struct Line {
+        glm::vec2 p1, p2;
+    };
+
+    std::vector<Line> lines;
+
+    int lineCount = 3;
+    int minimumLineLenght = 1.f;
+    int maximumLineLenght = 1.5f;
+
+    for (int i = 0; i < lineCount; ++i) {
+        glm::vec2 center = glm::vec2(
+            utils::rand(-gl::window_aspect_ratio() + 0.1f, gl::window_aspect_ratio() - 0.1f),
+            utils::rand(-0.9f, 0.9f)
+        );
+
+        float angle = utils::rand(0.f, glm::two_pi<float>());
+        float length = utils::rand(minimumLineLenght, maximumLineLenght);
+        glm::vec2 dir = glm::vec2(std::cos(angle), std::sin(angle)) * (length * 0.5f);
+
+        lines.push_back({ center - dir, center + dir });
+    }
+
+    // Ajouter des lignes au bord de l'écran pour éviter que les particules ne sortent
+    glm::vec2 topLeft(-gl::window_aspect_ratio(), 1.f);
+    glm::vec2 topRight(gl::window_aspect_ratio(), 1.f);
+    glm::vec2 bottomLeft(-gl::window_aspect_ratio(), -1.f);
+    glm::vec2 bottomRight(gl::window_aspect_ratio(), -1.f);
+
+    lines.push_back({topLeft, topRight});
+    lines.push_back({topRight, bottomRight});
+    lines.push_back({bottomRight, bottomLeft});
+    lines.push_back({bottomLeft, topLeft});
+
     while (gl::window_is_open())
     {
         glClearColor(0.f, 0.f, 0.f, 1.f);
@@ -44,37 +80,30 @@ int main()
 
         const float dt = gl::delta_time_in_seconds();
 
-        // // Afficher les particules
-        // for (auto it = particles.begin(); it != particles.end(); )
-        // {
-        //     it->update(dt);
-        //     if (it->isDead()) {
-        //         it = particles.erase(it);
-        //     } else {
-        //         utils::draw_disk(it->position, it->radius(), it->color());
-        //         ++it;
-        //     }
-        // }
+        // Afficher les particules
+        for (auto it = particles.begin(); it != particles.end(); )
+        {
+            it->update(dt);
 
+            glm::vec2 intersection;
+            for (const auto& line : lines) {
+                bool found = intersect_segments(it->position, it->position + it->velocity * dt, line.p1, line.p2, intersection);
+                if (found) {
+                    it->velocity = glm::reflect(it->velocity, glm::normalize(intersection - it->position));
+                }
+            }
 
-        // Debug intersection entre 2 lignes
-        float margin = 0.3f * gl::window_aspect_ratio();
+            if (it->isDead()) {
+                it = particles.erase(it);
+            } else {
+                utils::draw_disk(it->position, it->radius(), it->color());
+                ++it;
+            }
+        }
 
-        // Ligne horizontale centrée
-        glm::vec2 center_left = {-gl::window_aspect_ratio() + margin, 0.0f};
-        glm::vec2 center_right = { gl::window_aspect_ratio() - margin, 0.0f};
-        utils::draw_line(center_left, center_right, 0.005f, glm::vec4(1.f, 1.f, 1.f, 1.f));
-
-        // Ligne du bas vers la souris
-        glm::vec2 bottom_center = {0.0f, -1.0f};
-        glm::vec2 mouse = gl::mouse_position();
-        utils::draw_line(bottom_center, mouse, 0.005f, glm::vec4(1.f, 1.f, 1.f, 1.f));
-
-        // Dessiner le point d'intersection
-        glm::vec2 intersection;
-        bool found = intersect_segments(center_left, center_right, bottom_center, mouse, intersection);
-        if (found) {
-            utils::draw_disk(intersection, 0.015f, glm::vec4(1.f, 1.f, 0.f, 1.f)); // Jaune
+        // Afficher les lignes
+        for (const auto& line : lines) {
+            utils::draw_line(line.p1, line.p2, 0.005f, glm::vec4(1, 0, 0, 1));
         }
     }
 }

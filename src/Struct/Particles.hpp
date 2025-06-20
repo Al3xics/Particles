@@ -24,12 +24,12 @@ struct Particle {
 
         // Generate random velocity and angle
         float angle = utils::rand(0.f, glm::two_pi<float>()); // 0 à 2π
-        float speed = utils::rand(0.01f, 0.1f);
+        float speed = utils::rand(0.1f, 0.2f);
 
         velocity = speed * glm::vec2(std::cos(angle), std::sin(angle)); // initial speed
     
         mass = utils::rand(0.1f, 1.0f);
-        lifetime = utils::rand(2.0f, 5.0f); // Particle lives between 2 and 5 seconds
+        lifetime = utils::rand(15.0f, 20.0f); // Particle lives between 15 and 20 seconds
         age = 0.0f;
         startRadius = 0.02f; // same size as before
         auto rand_color = []() {
