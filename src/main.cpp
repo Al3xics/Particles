@@ -13,20 +13,12 @@ bool intersect_segments(glm::vec2 p1, glm::vec2 p2, glm::vec2 q1, glm::vec2 q2, 
     glm::vec2 r = p2 - p1; // Vecteur directeur du segment p (calculée avec les extrémités p1 et p2 du segment p)
     glm::vec2 s = q2 - q1; // Vecteur directeur du segment q (calculée avec les extrémités q1 et q2 du segment q)
     
-    // ------ Vérifier si les segments sont parallèles ------
-    float r_cross_s = r.x * s.y - r.y * s.x; // Produit vectoriel de r et s
-    if (r_cross_s == 0.0f) {
-        // Les segments sont parallèles
-        return false;
-    }
+    // ------ Calcul du déterminant ------
+    glm::mat2x2 m{ r, -s }; // Matrice formée par les vecteurs r et -s
+    glm::vec2 t = glm::inverse(m) * (q1-p1);
 
-    // ------ Calculer le point d'intersection ------
-    glm::vec2 qp = q1 - p1; // Vecteur de translation de p1 à q1
-
-    float t = (qp.x * s.y - qp.y * s.x) / r_cross_s;
-    float u = (qp.x * r.y - qp.y * r.x) / r_cross_s;
-
-    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+    // ------ Vérification de si le point sur l'intersection est dans les segments ------
+    if (t.x >= 0 && t.x <= 1 && t.y >= 0 && t.y <= 1) {
         intersection = p1 + t * r;
         return true;
     }
