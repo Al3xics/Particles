@@ -101,15 +101,10 @@ struct Particle {
     }
 
     Particle(glm::vec2 center, float radius) {
-        glm::vec2 pos;
-        do {
-            float x = utils::rand(center.x - radius, center.x + radius);
-            float y = utils::rand(center.y - radius, center.y + radius);
-            pos = glm::vec2(x, y);
-        } while (glm::distance(pos, center) > radius);
+        float r = radius * std::sqrt(utils::rand(0.f, 1.f)); // <- surface uniforme
+        float theta = utils::rand(0.f, glm::two_pi<float>());
 
-        position = pos;
-
+        position = center + glm::vec2(r * std::cos(theta), r * std::sin(theta));
         velocity = glm::vec2(utils::rand(-1.f, 1.f), utils::rand(-1.f, 1.f));
 
         mass = utils::rand(0.1f, 1.0f);
