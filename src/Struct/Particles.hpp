@@ -4,6 +4,7 @@
 #include "utils.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <cmath>
 
 struct Particle {
     glm::vec2 position; // Particle position
@@ -83,6 +84,33 @@ struct Particle {
         // velocity = speed * glm::vec2(std::cos(angle), std::sin(angle)); // initial speed
     
         mass = utils::rand(0.1f, 1.0f);
+        lifetime = 9999.0f; // Particules éternelles pour l'instant
+        age = 0.0f;
+        startRadius = 0.02f; // same size as before
+        auto rand_color = []() {
+            return glm::vec4(
+                utils::rand(0.f, 1.f),  // Red
+                utils::rand(0.f, 1.f),  // Green
+                utils::rand(0.f, 1.f),  // Blue
+                1.0f                    // Alpha opaque au départ
+            );
+        };
+
+        startColor = rand_color();
+        endColor = rand_color();
+    }
+
+    Particle(glm::vec2 center, float radius) {
+        // Génération aléatoire dans le cercle avec la formule donnée
+        float r = radius * std::sqrt(utils::rand(0.f, 1.5f));
+        float theta = utils::rand(0.f, glm::two_pi<float>());
+
+        position = center + glm::vec2(r * std::cos(theta), r * std::sin(theta));
+
+        // Initialisation simple de la vélocité (exemple)
+        velocity = glm::vec2(utils::rand(-1.f, 1.f), utils::rand(-1.f, 1.f));
+
+                mass = utils::rand(0.1f, 1.0f);
         lifetime = 9999.0f; // Particules éternelles pour l'instant
         age = 0.0f;
         startRadius = 0.02f; // same size as before

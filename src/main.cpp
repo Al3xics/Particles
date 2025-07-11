@@ -70,9 +70,18 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    // Créer un tableau de particules
-    std::vector<Particle> particles(200);
+    // // Créer un tableau de particules
+    // std::vector<Particle> particles(200);
 
+    std::vector<Particle> particles;
+    particles.reserve(200);  // Préallouer pour optimiser
+
+    glm::vec2 circleCenter = glm::vec2(0.f, 0.f);
+    float circleRadius = 0.5f;
+
+    for (int i = 0; i < 200; ++i) {
+        particles.emplace_back(circleCenter, circleRadius);
+    }
 
     // Création de lignes aléatoires
     struct Line {
