@@ -204,14 +204,14 @@ int main()
             }
         }
 
-        // Dessiner les lignes
-        for (const auto& line : lines) {
-            utils::draw_line(line.p1, line.p2, 0.005f, glm::vec4(1, 0, 0, 1));
-        }
+        // // Dessiner les lignes
+        // for (const auto& line : lines) {
+        //     utils::draw_line(line.p1, line.p2, 0.005f, glm::vec4(1, 0, 0, 1));
+        // }
 
-        // Dessiner les cercles
-        for (const auto& circle : circles) {
-            utils::draw_disk(circle.center, circle.radius, glm::vec4(1, 0, 0, 0.5f));
-        }
+        // // Dessiner les cercles
+        // for (const auto& circle : circles) {
+        //     utils::draw_disk(circle.center, circle.radius, glm::vec4(1, 0, 0, 0.5f));
+        // }
     }
 }

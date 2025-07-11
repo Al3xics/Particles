@@ -17,19 +17,34 @@ struct Particle {
 
     // Constructor to initialize the position randomly
     Particle() {
+        // Initialize rectangle 
+        float aspect = gl::window_aspect_ratio();
+        float xMin = -aspect * 0.5f;
+        float xMax = aspect * 0.5f;
+        float yMin = -0.5f;
+        float yMax = 0.5f;
+
         position = glm::vec2(
-            -gl::window_aspect_ratio() + static_cast<float>(std::rand()) / RAND_MAX * 2 * gl::window_aspect_ratio(),
-            -1.0f + static_cast<float>(std::rand()) / RAND_MAX * 2.0f
+            utils::rand(xMin, xMax),
+            utils::rand(yMin, yMax)
         );
 
-        // Generate random velocity and angle
-        float angle = utils::rand(0.f, glm::two_pi<float>()); // 0 à 2π
-        float speed = utils::rand(0.1f, 0.2f);
+        // Pas de mouvement
+        velocity = glm::vec2(0.f);
 
-        velocity = speed * glm::vec2(std::cos(angle), std::sin(angle)); // initial speed
+        // position = glm::vec2(
+        //     -gl::window_aspect_ratio() + static_cast<float>(std::rand()) / RAND_MAX * 2 * gl::window_aspect_ratio(),
+        //     -1.0f + static_cast<float>(std::rand()) / RAND_MAX * 2.0f
+        // );
+
+        // // Generate random velocity and angle
+        // float angle = utils::rand(0.f, glm::two_pi<float>()); // 0 à 2π
+        // float speed = utils::rand(0.1f, 0.2f);
+
+        // velocity = speed * glm::vec2(std::cos(angle), std::sin(angle)); // initial speed
     
         mass = utils::rand(0.1f, 1.0f);
-        lifetime = utils::rand(15.0f, 20.0f); // Particle lives between 15 and 20 seconds
+        lifetime = 9999.0f; // Particules éternelles pour l'instant
         age = 0.0f;
         startRadius = 0.02f; // same size as before
         auto rand_color = []() {
@@ -47,15 +62,16 @@ struct Particle {
 
     // Full Euler integration of all the forces
     void update(float dt) {
-        position += velocity * dt;
+        // position += velocity * dt;
 
-        // Update age
-        age += dt;
+        // // Update age
+        // age += dt;
     }
 
     // Check if the particle has expired
     bool isDead() const {
-        return age >= lifetime;
+        // return age >= lifetime;
+        return false;
     }
 
     // Radius that linearly shrinks to 0 at end of life
