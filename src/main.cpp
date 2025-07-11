@@ -79,7 +79,7 @@ int main()
     glm::vec2 circleCenter = glm::vec2(0.f, 0.f);
     float circleRadius = 0.5f;
 
-    for (int i = 0; i < 200; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         particles.emplace_back(circleCenter, circleRadius);
     }
 
