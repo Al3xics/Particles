@@ -17,20 +17,59 @@ struct Particle {
 
     // Constructor to initialize the position randomly
     Particle() {
-        // Initialize rectangle 
-        float aspect = gl::window_aspect_ratio();
-        float xMin = -aspect * 0.5f;
-        float xMax = aspect * 0.5f;
-        float yMin = -0.5f;
-        float yMax = 0.5f;
+        // Initialize Parralelogram
+        static glm::vec2 parallelogramOffset;
+        static glm::vec2 parallelogramA;
+        static glm::vec2 parallelogramB;
+        static bool parallelogramGenerated = false;
 
-        position = glm::vec2(
-            utils::rand(xMin, xMax),
-            utils::rand(yMin, yMax)
-        );
+        if (!parallelogramGenerated) {
+            parallelogramGenerated = true;
 
-        // Pas de mouvement
+            // Offset aléatoire bien centré
+            parallelogramOffset = glm::vec2(
+                utils::rand(-gl::window_aspect_ratio() * 0.5f, gl::window_aspect_ratio() * 0.5f),
+                utils::rand(-0.5f, 0.5f)
+            );
+
+            // Quatre vecteurs aléatoires de taille raisonnable
+            float maxLenghtX = gl::window_aspect_ratio() * 0.7f;
+            float maxLenghtY = 1.7f;
+            float maxHightX = 0.2f;
+            float maxHightY = 0.2f;
+
+            float angleA = utils::rand(0.f, glm::two_pi<float>());
+            float angleB = utils::rand(0.f, glm::two_pi<float>());
+
+            parallelogramA = glm::vec2(std::cos(angleA), std::sin(angleA)) * utils::rand(maxHightX, maxLenghtX);
+            parallelogramB = glm::vec2(std::cos(angleB), std::sin(angleB)) * utils::rand(maxHightY, maxLenghtY);
+        }
+
+        // Combinaison linéaire dans le parallélogramme
+        float u = utils::rand(0.f, 1.f);
+        float v = utils::rand(0.f, 1.f);
+        position = parallelogramOffset + u * parallelogramA + v * parallelogramB;
+
         velocity = glm::vec2(0.f);
+
+        // --------------------------------------------
+
+        // // Initialize rectangle 
+        // float aspect = gl::window_aspect_ratio();
+        // float xMin = -aspect * 0.5f;
+        // float xMax = aspect * 0.5f;
+        // float yMin = -0.5f;
+        // float yMax = 0.5f;
+
+        // position = glm::vec2(
+        //     utils::rand(xMin, xMax),
+        //     utils::rand(yMin, yMax)
+        // );
+
+        // // Pas de mouvement
+        // velocity = glm::vec2(0.f);
+
+        // --------------------------------------------
 
         // position = glm::vec2(
         //     -gl::window_aspect_ratio() + static_cast<float>(std::rand()) / RAND_MAX * 2 * gl::window_aspect_ratio(),
