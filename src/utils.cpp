@@ -1,6 +1,7 @@
 #include "utils.hpp"
 #include <random>
 #include "opengl-framework/opengl-framework.hpp"
+#include <glm/gtc/constants.hpp>
 
 namespace utils {
 
@@ -148,6 +149,85 @@ void draw_line(glm::vec2 start, glm::vec2 end, float thickness, glm::vec4 const&
     line_shader.set_uniform("u_inverse_aspect_ratio", 1.f / gl::framebuffer_aspect_ratio());
     line_shader.set_uniform("u_color", color);
     line_mesh.draw();
+}
+
+std::vector<glm::vec2> poisson_disc_sampling(glm::vec2 center, float radius, float minDist, int k) {
+    float cellSize = minDist / std::sqrt(2.f);
+    int gridSize = static_cast<int>(std::ceil((2 * radius) / cellSize));
+
+    // Grille 2D (flattened), -1 = pas de point
+    std::vector<int> grid(gridSize * gridSize, -1);
+
+    std::vector<glm::vec2> samples;
+    std::vector<glm::vec2> activeList;
+
+    // Place initial point au centre
+    samples.push_back(center);
+    activeList.push_back(center);
+
+    // Fonction pour convertir une position en index de grille
+    auto getGridIndex = [&](glm::vec2 point) -> glm::ivec2 {
+        glm::vec2 local = point - (center - glm::vec2(radius));
+        return glm::ivec2(local / cellSize);
+    };
+
+    // Place le point initial dans la grille
+    glm::ivec2 index = getGridIndex(center);
+    grid[index.x + index.y * gridSize] = 0;
+
+    while (!activeList.empty()) {
+        int randIndex = std::rand() % activeList.size();
+        glm::vec2 current = activeList[randIndex];
+        bool found = false;
+
+        for (int i = 0; i < k; ++i) {
+            float r = utils::rand(minDist, 2.f * minDist);
+            float angle = utils::rand(0.f, 2.f * glm::pi<float>());
+
+            glm::vec2 offset = glm::vec2(std::cos(angle), std::sin(angle)) * r;
+            glm::vec2 candidate = current + offset;
+
+            if (glm::distance(candidate, center) > radius) continue;
+
+            glm::ivec2 gridIdx = getGridIndex(candidate);
+            if (gridIdx.x < 0 || gridIdx.y < 0 || gridIdx.x >= gridSize || gridIdx.y >= gridSize)
+                continue;
+
+            bool tooClose = false;
+
+            // Vérifie les voisins
+            for (int dx = -2; dx <= 2 && !tooClose; ++dx) {
+                for (int dy = -2; dy <= 2 && !tooClose; ++dy) {
+                    int nx = gridIdx.x + dx;
+                    int ny = gridIdx.y + dy;
+
+                    if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize) continue;
+
+                    int neighborIndex = grid[nx + ny * gridSize];
+                    if (neighborIndex >= 0) {
+                        if (glm::distance(candidate, samples[neighborIndex]) < minDist) {
+                            tooClose = true;
+                        }
+                    }
+                }
+            }
+
+            if (!tooClose) {
+                samples.push_back(candidate);
+                activeList.push_back(candidate);
+                grid[gridIdx.x + gridIdx.y * gridSize] = samples.size() - 1;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            // Aucun point trouvé autour de current : on le retire
+            activeList.erase(activeList.begin() + randIndex);
+        }
+    }
+
+    return samples;
 }
 
 } // namespace utils

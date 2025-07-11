@@ -70,17 +70,28 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
+    // --------------------------------------
+
     // // Créer un tableau de particules
     // std::vector<Particle> particles(200);
+    
+    // --------------------------------------
 
+    // std::vector<Particle> particles;
+    // particles.reserve(200);  // Préallouer pour optimiser
+    
+    // glm::vec2 circleCenter = glm::vec2(0.f, 0.f);
+    // float circleRadius = 0.5f;
+    
+    // for (int i = 0; i < 1000; ++i) {
+    //     particles.emplace_back(circleCenter, circleRadius);
+    // }
+        
     std::vector<Particle> particles;
-    particles.reserve(200);  // Préallouer pour optimiser
+    std::vector<glm::vec2> points = utils::poisson_disc_sampling(glm::vec2(0.f, 0.f), 0.8f, 0.02f);
 
-    glm::vec2 circleCenter = glm::vec2(0.f, 0.f);
-    float circleRadius = 0.5f;
-
-    for (int i = 0; i < 1000; ++i) {
-        particles.emplace_back(circleCenter, circleRadius);
+    for (const glm::vec2& pt : points) {
+        particles.emplace_back(pt);
     }
 
     // Création de lignes aléatoires
@@ -139,17 +150,17 @@ int main()
         circles.push_back({center, radius});
     }
 
-    particles.erase(
-        std::remove_if(particles.begin(), particles.end(), [&](const Particle& p) {
-            for (const auto& circle : circles) {
-                if (glm::distance(p.position, circle.center) < circle.radius) {
-                    return true; // Supprimer cette particule
-                }
-            }
-            return false;
-        }),
-        particles.end()
-    );
+    // particles.erase(
+    //     std::remove_if(particles.begin(), particles.end(), [&](const Particle& p) {
+    //         for (const auto& circle : circles) {
+    //             if (glm::distance(p.position, circle.center) < circle.radius) {
+    //                 return true; // Supprimer cette particule
+    //             }
+    //         }
+    //         return false;
+    //     }),
+    //     particles.end()
+    // );
 
     while (gl::window_is_open())
     {

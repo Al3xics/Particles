@@ -120,6 +120,27 @@ struct Particle {
         endColor = rand_color();
     }
 
+    Particle(glm::vec2 pos) {
+        position = pos;
+        velocity = glm::vec2(0.f, 0.f);
+        mass = utils::rand(0.1f, 1.0f);
+        lifetime = 9999.0f;
+        age = 0.0f;
+        startRadius = 0.02f;
+
+        auto rand_color = []() {
+            return glm::vec4(
+                utils::rand(0.f, 1.f),
+                utils::rand(0.f, 1.f),
+                utils::rand(0.f, 1.f),
+                1.0f
+            );
+        };
+
+        startColor = rand_color();
+        endColor = rand_color();
+    }
+
     // Full Euler integration of all the forces
     void update(float dt) {
         // position += velocity * dt;
